@@ -114,7 +114,8 @@ def conjugate_task(u, y):
   return psi
 
 def calculation(y, epsilon=0.01):
-  currentManagement = map(initial_management, [np.arrange(0, steps_t)])
+  currentManagement = map(initial_management, [np.arange(0, steps_t)])
+  # currentManagement = initial_management
   norm = 1e10
   iterations = 0
 
@@ -125,31 +126,31 @@ def calculation(y, epsilon=0.01):
 
     psi = conjugate_task(u, y)
 
-    tmp = []
+    tempManagement = []
     for j in range(len(psi)):
-      if psi[j][psi[j].size() - 1] >= 0:
+      if psi[j][psi[j].size - 1] >= 0:
         tempManagement.append(p_min)
       else:
         tempManagement.append(p_max)
     
     integrandOfNumerator = []
     for j in range(len(psi)):
-      integrandOfNumerator.append(a2 * beta * psi[j][psi[j].size() - 1] * (tempManagement[j] - currentManagement[j]))
+      integrandOfNumerator.append(a ** 2 * beta * psi[j][psi[j].size - 1] * (tempManagement[j] - currentManagement[j]))
       
-    numerator = rectangleSquare(integrandOfNumerator, tau)
-    tempU = straightTask(tempManagement)
+    numerator = rectangle_square(integrandOfNumerator, tau)
+    tempU = straight_task(tempManagement)
 
     integrandOfDenominator = []
-    for j in range(len(u[u.size() - 1].size())):
-      integrandOfDenominator.append((tempU[tempU.size() - 1][j] - u[u.size() - 1][j]) ** 2)
+    for j in range(len(u[u.size - 1].size())):
+      integrandOfDenominator.append((tempU[tempU.size - 1][j] - u[u.size - 1][j]) ** 2)
 
-    denominator = rectangleSquare(integrandOfDenominator, h)
+    denominator = rectangle_square(integrandOfDenominator, h)
     currentAlfa = min(-0.5 * (numerator / denominator), 1)
 
     for j in range(len(currentManagement)):
       currentManagement[j] = currentManagement[j] + currentAlfa * (tempManagement[j] - currentManagement[j])
 
-    answerU = straightTask(currentManagement)
+    answerU = straight_task(currentManagement)
     
     return answerU[answerU.size() - 1]
 
@@ -166,8 +167,16 @@ def l2_norm(vec, y, step):
   return rectangle_square(vec, step)
 
 def print_file(u, name_of_file="ySolution.txt"):
+  f = open(name_of_file, "a")
+  if len(u.shape) == 1:
+    for i in range(u.size):
+      f.write(i * h + " " + u[i])
+  else:
+    for i in range(u.size):
+      for j in range(u[i].size):
+        f.write(i * tau + " " + j * h + " " + u[i][j])
+  f.close()
   #проверка на u одномерный или нет и соотв. вывод в файл 
-  pass
 
 def plot_2d(filename='ySolution.txt'):
   f = open(filename, 'r') # требования к файлу: первая колонка - координата/время, вторая - значения функции
